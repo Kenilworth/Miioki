@@ -81,7 +81,7 @@ class LoginPacket extends DataPacket{
 	}
 
 	public function mayHaveUnreadBytes() : bool{
-		return $this->protocol !== null and in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS);
+		return $this->protocol !== null and in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS) === false;
 	}
 
 	protected function decodePayload(){
