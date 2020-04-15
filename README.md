@@ -6,5 +6,5 @@
 
 - Min PHP Version: 7.2.0
 
-# Server running on Miioki
+# Servers running on Miioki
 - play.hinexpe.xyz:19132
