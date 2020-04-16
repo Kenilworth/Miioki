@@ -370,6 +370,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $lastRightClickTime = 0.0;
 	/** @var Vector3|null */
 	protected $lastRightClickPos = null;
+	/** @var int */
+	protected $protocol = ProtocolInfo::CURRENT_PROTOCOL;
 
 	/**
 	 * @return TranslationContainer|string
@@ -1812,7 +1814,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		parent::initEntity();
 		$this->addDefaultWindows();
 	}
-
+	
+	public function getProtocol() : int{
+	    return $this->protocol;
+	}
+	
 	public function handleLogin(LoginPacket $packet) : bool{
 		if($this->loggedIn){
 			return false;
@@ -1824,7 +1830,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}else{
 				$this->sendPlayStatus(PlayStatusPacket::LOGIN_FAILED_SERVER, true);
 			}
-
+			$this->protocol = $packet->protocol;
 			//This pocketmine disconnect message will only be seen by the console (PlayStatusPacket causes the messages to be shown for the client)
 			$this->close("", $this->server->getLanguage()->translateString("pocketmine.disconnect.incompatibleProtocol", [$packet->protocol ?? "unknown"]), false);
 
