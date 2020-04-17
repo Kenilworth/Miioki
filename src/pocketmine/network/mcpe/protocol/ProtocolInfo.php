@@ -37,21 +37,26 @@ interface ProtocolInfo{
 	 */
 
 	/** Actual Minecraft: PE protocol version */
-	public const CURRENT_PROTOCOL = 389;
+	public const CURRENT_PROTOCOL = self::PROTOCOL_390;
 	
 	/** Accepted Minecraft: PE protocols */
 	public const ACCEPTED_PROTOCOLS = [
 	    self::PROTOCOL_388,
+	    selt::PROTOCO_389,
 	    self::CURRENT_PROTOCOL
 	];
 	
 	/** Minecraft: PE 1.13 */
 	public const PROTOCOL_388 = 388;
+	/** Minecraft: PE 1.14.30 */
+	public const PROTOCOL_389 = 389;
+	/** Minecraft: PE 1.14.60 */
+	public const PROTOCOL_390 = 390;
 	
 	/** Current Minecraft PE version reported by the server. This is usually the earliest currently supported version. */
-	public const MINECRAFT_VERSION = 'v1.14.0';
+	public const MINECRAFT_VERSION = 'v1.14.60';
 	/** Version number sent to clients in ping responses. */
-	public const MINECRAFT_VERSION_NETWORK = '1.14.0';
+	public const MINECRAFT_VERSION_NETWORK = '1.14.60';
 
 	public const LOGIN_PACKET = 0x01;
 	public const PLAY_STATUS_PACKET = 0x02;

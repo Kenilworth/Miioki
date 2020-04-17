@@ -41,6 +41,10 @@ use pocketmine\network\mcpe\protocol\types\SkinAnimation;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinImage;
 use pocketmine\network\mcpe\protocol\types\StructureSettings;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\network\mcpe\protocol\types\PersonaPieceTintColor;
+use pocketmine\network\mcpe\protocol\types\PersonaSkinPiece;
+
 use pocketmine\utils\BinaryStream;
 use pocketmine\utils\UUID;
 use function count;
@@ -77,7 +81,7 @@ class NetworkBinaryStream extends BinaryStream{
 		$this->putLInt($uuid->getPart(2));
 	}
 
-	public function getSkin() : SkinData{
+	public function getSkin(int $playerProtocol) : SkinData{
 		$skinId = $this->getString();
 		$skinResourcePatch = $this->getString();
 		$skinData = $this->getSkinImage();
@@ -98,14 +102,45 @@ class NetworkBinaryStream extends BinaryStream{
 		$capeOnClassic = $this->getBool();
 		$capeId = $this->getString();
 		$fullSkinId = $this->getString();
-
-		return new SkinData($skinId, $skinResourcePatch, $skinData, $animations, $capeData, $geometryData, $animationData, $premium, $persona, $capeOnClassic, $capeId, $fullSkinId);
+		$armSize = "";
+		$skinColor = "";
+		$personaPieceCount = 0;
+		$personaPieces = $pieceTintColors = [];
+		if($playerProtocol >= ProtocolInfo::PROTOCOL_390){
+		    $armSize = $this->getString();
+		    $skinColor = $this->getString();
+		    $personaPieceCount = $this->getLInt();
+		    for($i = 0; $i < $personaPieceCount; ++$i){
+		        $personaPieces[] = new PersonaSkinPiece(
+		            $pieceId = $this->getString(),
+		            $pieceType = $this->getString(),
+		            $packId = $this->getString(),
+		            $isDefaultPiece = $this->getBool(),
+		            $productId = $this->getString()
+		       );
+		    }
+		    $pieceTintColorCount = $this->getLInt();
+		    $pieceTintColors = [];
+		    for($i = 0; $i < $pieceTintColorCount; ++$i){
+		        $pieceType = $this->getString();
+		        $colorCount = $this->getLInt();
+		        $colors = [];
+		        for($j = 0; $j < $colorCount; ++$j){
+		            $colors[] = $this->getString();
+		        }
+		        $pieceTintColors[] = new PersonaPieceTintColor(
+		            $pieceType,
+		            $colors
+		        );
+		    }
+		}
+		return new SkinData($skinId, $skinResourcePatch, $skinData, $animations, $capeData, $geometryData, $animationData, $premium, $persona, $capeOnClassic, $capeId, $fullSkinId, $armSize, $skinColor, $personaPieces, $pieceTintColors);
 	}
 
 	/**
 	 * @return void
 	 */
-	public function putSkin(SkinData $skin){
+	public function putSkin(SkinData $skin, int $playerProtocol){
 		$this->putString($skin->getSkinId());
 		$this->putString($skin->getResourcePatch());
 		$this->putSkinImage($skin->getSkinImage());
@@ -123,6 +158,26 @@ class NetworkBinaryStream extends BinaryStream{
 		$this->putBool($skin->isPersonaCapeOnClassic());
 		$this->putString($skin->getCapeId());
 		$this->putString($skin->getFullSkinId());
+		if($playerProtocol >= ProtocolInfo::PROTOCOL_390){
+		    $this->putString($skin->getArmSize());
+		    $this->putString($skin->getSkinColor());
+		    $this->putLInt(count($skin->getPersonaPieces()));
+		    foreach($skin->getPersonaPieces() as $piece){
+		        $this->putString($piece->getPieceId());
+		        $this->putString($piece->getPieceType());
+		        $this->putString($piece->getPackId());
+		        $this->putBool($piece->isDefaultPiece());
+		        $this->putString($piece->getProductId());
+		    }
+		    $this->putLInt(count($skin->getPieceTintColors()));
+		    foreach($skin->getPieceTintColors() as $tint){
+		        $this->putString($tint->getPieceType());
+		        $this->putLInt(count($tint->getColors()));
+		        foreach($tint->getColors() as $color){
+		            $this->putString($color);
+		        }
+		    }
+		}
 	}
 
 	private function getSkinImage() : SkinImage{

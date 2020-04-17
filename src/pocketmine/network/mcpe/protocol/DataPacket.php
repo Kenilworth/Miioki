@@ -54,7 +54,9 @@ abstract class DataPacket extends NetworkBinaryStream{
 	public $senderSubId = 0;
 	/** @var int */
 	public $recipientSubId = 0;
-
+	/** @var int */
+	private $playerProtocol = ProtocolInfo::CURRENT_PROTOCOL;
+	
 	/**
 	 * @return int
 	 */
@@ -69,7 +71,15 @@ abstract class DataPacket extends NetworkBinaryStream{
 	public function canBeBatched() : bool{
 		return true;
 	}
-
+	
+	public function setPlayerProtocol(int $protocol) : void{
+	    $this->playerProtocol = $protocol;
+	}
+	
+	public function getPlayerProtocol() : int{
+	    return $this->playerProtocol;
+	}
+	
 	public function canBeSentBeforeLogin() : bool{
 		return false;
 	}

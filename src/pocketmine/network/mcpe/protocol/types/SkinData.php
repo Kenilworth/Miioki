@@ -26,6 +26,8 @@ namespace pocketmine\network\mcpe\protocol\types;
 use pocketmine\utils\UUID;
 
 class SkinData{
+    public const ARM_SIZE_SLIM = "slim";
+	public const ARM_SIZE_WIDE = "wide";
 
 	/** @var string */
 	private $skinId;
@@ -51,11 +53,21 @@ class SkinData{
 	private $capeId;
 	/** @var string */
 	private $fullSkinId;
-
+	/** @var string */
+	private $armSize;
+	/** @var string */
+	private $skinColor;
+	/** @var int */
+	private $personaPieces;
+	/** @var int */
+	private $pieceTintColors;
+	/** @var bool */
+	private $isVerified;
+	
 	/**
 	 * @param SkinAnimation[] $animations
 	 */
-	public function __construct(string $skinId, string $resourcePatch, SkinImage $skinImage, array $animations = [], SkinImage $capeImage = null, string $geometryData = "", string $animationData = "", bool $premium = false, bool $persona = false, bool $personaCapeOnClassic = false, string $capeId = "", ?string $fullSkinId = null){
+	public function __construct(string $skinId, string $resourcePatch, SkinImage $skinImage, array $animations = [], SkinImage $capeImage = null, string $geometryData = "", string $animationData = "", bool $premium = false, bool $persona = false, bool $personaCapeOnClassic = false, string $capeId = "", ?string $fullSkinId = null, string $armSize = "", string $skinColor = "", array $personaPieces = [], array $pieceTintColors = [], bool $isVerified = false){
 		$this->skinId = $skinId;
 		$this->resourcePatch = $resourcePatch;
 		$this->skinImage = $skinImage;
@@ -69,8 +81,38 @@ class SkinData{
 		$this->capeId = $capeId;
 		//this has to be unique or the client will do stupid things
 		$this->fullSkinId = $fullSkinId ?? UUID::fromRandom()->toString();
+		$this->armSize = $armSize;
+		$this->skinColor = $skinColor;
+		$this->personaPieces = $personaPieces;
+		$this->pieceTintColors = $pieceTintColors;
+		$this->isVerified = $isVerified;
 	}
-
+	
+	public function setVerified(bool $verified) : void
+	{
+	    $this->isVerified = $verified;
+	}
+	
+	public function isVerified() : bool{
+	    return $this->isVerified;
+	}
+	
+	public function getArmSize() : string{
+	    return $this->armSize;
+	}
+	
+	public function getSkinColor() : string{
+	    return $this->skinColor;
+	}
+	
+	public function getPersonaPieces() : array{
+	    return $this->personaPieces;
+	}
+	
+	public function getPieceTintColors() : array{
+	    return $this->pieceTintColor;
+	}
+	
 	public function getSkinId() : string{
 		return $this->skinId;
 	}

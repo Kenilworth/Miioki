@@ -100,6 +100,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\PlayerNetworkSessionAdapter;
+use pocketmine\network\mcpe\protocol\types\PersonaPieceTintColor;
+use pocketmine\network\mcpe\protocol\types\PersonaSkinPiece;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
@@ -1819,7 +1821,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	    return $this->protocol;
 	}
 	
-	public function handleLogin(LoginPacket $packet) : bool{
+	public function (LoginPacket $packet) : bool{
 		if($this->loggedIn){
 			return false;
 		}
@@ -1864,7 +1866,20 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		foreach($packet->clientData["AnimatedImageData"] as $animation){
 			$animations[] = new SkinAnimation(new SkinImage($animation["ImageHeight"], $animation["ImageWidth"], base64_decode($animation["Image"], true)), $animation["Type"], $animation["Frames"]);
 		}
-
+		$personaPieces = [];
+		$pieceTintColor = [];
+		if($this->getProtocol() >= ProtocolInfo::PROTOCOL_390){
+		    foreach($packet->clientData["PersonaPieces"] as $piece){
+		        $personaPiece[] = new PersonaSkinPiece($piece["PieceId"], $piece["PieceType"], $piece["PackId"], $piece["IsDefault"], $piece["ProductId"]);
+		    }
+		    foreach($packet->clientData["PieceTintColors"] as $tintColor){
+		        $pieceTintColors[] = PersonaPieceTintColor($tintColor["PieceType"], $tintColor["Colors"]);
+		    }
+		}
+		$armSize = "";
+		if($this->getProtocol() >= ProtocolInfo::PROTOCOL_390){
+		    $armSize = $packet->clientData["ArmSize"] ?? SkinData::ARM_SIZE_WIDE;
+		}
 		$skinData = new SkinData(
 			$packet->clientData["SkinId"],
 			base64_decode($packet->clientData["SkinResourcePatch"] ?? "", true),
@@ -1876,7 +1891,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$packet->clientData["PremiumSkin"] ?? false,
 			$packet->clientData["PersonaSkin"] ?? false,
 			$packet->clientData["CapeOnClassicSkin"] ?? false,
-			$packet->clientData["CapeId"] ?? ""
+			$packet->clientData["CapeId"] ?? "",
+			null,
+			$armSize,
+			$packet->clientData["SkinColor"] ?? "",
+			$perdonaPieces,
+			$pieceTintColors,
+			true
 		);
 
 		$skin = SkinAdapterSingleton::get()->fromSkinData($skinData);
@@ -3145,6 +3166,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$timings = Timings::getSendDataPacketTimings($packet);
 		$timings->startTiming();
 		try{
+		    $packet->setPlayerProtocol($this->protocol);
 			$ev = new DataPacketSendEvent($this, $packet);
 			$ev->call();
 			if($ev->isCancelled()){

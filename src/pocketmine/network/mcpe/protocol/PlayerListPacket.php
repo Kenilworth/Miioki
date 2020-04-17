@@ -67,6 +67,13 @@ class PlayerListPacket extends DataPacket{
 
 			$this->entries[$i] = $entry;
 		}
+		if($this->getPlayerProtocol() >= ProtocolInfo::PROTOCOL_390){
+		    if($this->type === self::TYPE_ADD){
+		        for($i = 0; $i < $count; ++$i){
+		            $this->entries[$i]->skinData->setVerified($this->getBool());
+		        }
+		    }
+		}
 	}
 
 	protected function encodePayload(){
@@ -86,6 +93,13 @@ class PlayerListPacket extends DataPacket{
 			}else{
 				$this->putUUID($entry->uuid);
 			}
+		}
+		if($this->getPlayerProtocol() >= ProtocolInfo::PROTOCOL_390){
+		    if($this->type === self::TYPE_ADD){
+		        foreach($this->entries as $entry){
+		            $this->putBool($entry->skinData->isVerified());
+		        }
+		    }
 		}
 	}
 

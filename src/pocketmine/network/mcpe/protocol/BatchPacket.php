@@ -121,7 +121,7 @@ class BatchPacket extends DataPacket{
 
 		foreach($this->getPackets() as $buf){
 			$pk = PacketPool::getPacket($buf);
-
+			$pk->setPlayerProtocol($session->getProtocol());
 			if(!$pk->canBeBatched()){
 				throw new \UnexpectedValueException("Received invalid " . get_class($pk) . " inside BatchPacket");
 			}
